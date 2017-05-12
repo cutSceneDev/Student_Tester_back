@@ -6,19 +6,24 @@ let sql = mysql.createConnection({
   database  : 'MyData'
 });
 
-export function auth (res, variables) {
-  if (!variables.login && !variables.password) res(false);
-  else {
-    let queryString = `SELECT login, password FROM users`;
-    sql.query(queryString, (error, response) => {
-      if (error) res(error.toString());
-      response.forEach((user) => {
-        if(user.login === variables.login && user.password === variables.password) res(true);
-        else res(false);
-      })
-    })
-  }
+export async function auth(variables) {
+  let res;
+    let queryString = `SELECT * FROM users`;
+    await sql.query(queryString, (error, response) => {
+      res = response;
+    });
+  return res;
 }
+  // if (!variables.login && !variables.password) res = false;
+  // else {
+  //   let queryString = `SELECT login, password FROM users`;
+  //   sql.query(queryString, (error, response) => {
+  //     response.forEach((user) => {
+  //       if(user.login === variables.login && user.password === variables.password) res = true;
+  //       else res = false;
+  //     })
+  //   })
+  // }
 
 // exports.show = function show(resSend, params, query) {
 //   let queryString = `SELECT ${query.id || '*'} FROM ${params.target}`;
