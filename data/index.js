@@ -6,13 +6,16 @@ let sql = mysql.createConnection({
   database  : 'MyData'
 });
 
-export async function auth(variables) {
-  let res;
-    let queryString = `SELECT * FROM users`;
-    await sql.query(queryString, (error, response) => {
-      res = response;
+export function auth(reqFront) {
+  return new Promise( (resolve) => {
+    let queryString = `SELECT login, password FROM users`;
+    sql.query(queryString, (error, response) => {
+      response.forEach(user => {
+        if(user.login.toLowerCase() === reqFront.login.toLowerCase() && user.password.toLowerCase() === reqFront.password.toLowerCase()) resolve(true);
+      });
+      resolve(false);
     });
-  return res;
+  });
 }
   // if (!variables.login && !variables.password) res = false;
   // else {
@@ -21,7 +24,7 @@ export async function auth(variables) {
   //     response.forEach((user) => {
   //       if(user.login === variables.login && user.password === variables.password) res = true;
   //       else res = false;
-  //     })
+  //
   //   })
   // }
 

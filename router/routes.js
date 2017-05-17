@@ -3,22 +3,28 @@ const router = express.Router();
 const data = require('../data/index');
 
 router.post('/database/authAdmin', async (request, response, next) => {
+  response.send( await data.auth(request.body) );
 
-  let res;
-  (await function hello() {
-    return new Promise(resolve => {
-      setTimeout(()=>{res='123';resolve()}, 500);
-    })
-  }())
-  console.log(res);
-  });
+});
 
 
+//
+//
+//   let res;
+//   (await function hello() {
+//     return new Promise(resolve => {
+//       setTimeout(()=>{res='123';resolve()}, 500);
+//     })
+//   }())
+//   console.log(res);
+// });
 
 
-  // data.auth(function(result){
-  //   response.send(result)
-  // }, request.body)
+
+
+// data.auth(function(result){
+//   response.send(result)
+// }, request.body)
 //
 // router.get('/database/:target', function(request, response, next){
 //   console.log(request.query.id);
