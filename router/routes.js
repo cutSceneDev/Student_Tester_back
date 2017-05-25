@@ -4,7 +4,10 @@ const data = require('../data/index');
 
 router.post('/database/authAdmin', async (request, response, next) => {
   response.send( await data.auth(request.body) );
+});
 
+router.get('/database/tests', async (request, response, next) => {
+  response.send( await data.getTests(request.body) );
 });
 
 

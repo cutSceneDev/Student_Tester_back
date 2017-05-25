@@ -3,17 +3,31 @@ let sql = mysql.createConnection({
   host      : 'localhost',
   user      : 'artyr',
   password  : 'pass',
-  database  : 'MyData'
+  database  : 'MyData',
+  charset: 'UTF8'
 });
 
-export function auth(reqFront) {
-  return new Promise( (resolve) => {
+    sql.query('SET NAMES utf8');
+
+export function auth(frontData) {
+  return new Promise( (resolve, reject) => {
     let queryString = `SELECT login, password FROM users`;
     sql.query(queryString, (error, response) => {
       response.forEach(user => {
-        if(user.login.toLowerCase() === reqFront.login.toLowerCase() && user.password.toLowerCase() === reqFront.password.toLowerCase()) resolve(true);
+        if(user.login.toLowerCase() === frontData.login.toLowerCase() && user.password.toLowerCase() === frontData.password.toLowerCase()) resolve(true);
       });
       resolve(false);
+    });
+  });
+}
+export function getTests(qua) {
+  return new Promise( (resolve, reject) => {
+    let queryString = `SELECT id_question, question, answer1, answer2, answer3, answer4 FROM testing`;
+    sql.query(queryString, (error, response) => {
+      // sql.query("SET NAMES 'utf8'");
+      // sql.query("SET CHARACTER SET 'utf8'");
+      console.log(response);
+      resolve(response);
     });
   });
 }
