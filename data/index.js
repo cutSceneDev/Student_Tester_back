@@ -3,11 +3,8 @@ let sql = mysql.createConnection({
   host      : 'localhost',
   user      : 'artyr',
   password  : 'pass',
-  database  : 'MyData',
-  charset: 'UTF8'
+  database  : 'mydata'
 });
-
-    sql.query('SET NAMES utf8');
 
 export function auth(frontData) {
   return new Promise( (resolve, reject) => {
@@ -24,9 +21,7 @@ export function getTests(qua) {
   return new Promise( (resolve, reject) => {
     let queryString = `SELECT id_question, question, answer1, answer2, answer3, answer4 FROM testing`;
     sql.query(queryString, (error, response) => {
-      // sql.query("SET NAMES 'utf8'");
-      // sql.query("SET CHARACTER SET 'utf8'");
-      console.log(response);
+      if(error) console.log(error);
       resolve(response);
     });
   });
