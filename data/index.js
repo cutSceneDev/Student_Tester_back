@@ -6,7 +6,7 @@ let sql = mysql.createConnection({
   database  : 'mydata'
 });
 
-export function auth(frontData) {
+export function getAuth(frontData) {
   return new Promise( (resolve, reject) => {
     let queryString = `SELECT login, password FROM users`;
     sql.query(queryString, (error, response) => {
@@ -17,7 +17,7 @@ export function auth(frontData) {
     });
   });
 }
-export function getTests(qua) {
+export function getTests(frontData) {
   return new Promise( (resolve, reject) => {
     let queryString = `SELECT id_question, question, answer1, answer2, answer3, answer4 FROM testing`;
     sql.query(queryString, (error, response) => {
@@ -26,6 +26,48 @@ export function getTests(qua) {
     });
   });
 }
+
+export function getDbResults(frontData) {
+  return new Promise ( (resolve, reject) => {
+    let queryString = `SELECT correct FROM testing`;
+    sql.query(queryString, (error, response) => {
+      if(error) console.log(error);
+      resolve(response);
+    })
+  })
+}
+
+export function calcResults(dataResults, frontResults) {
+  return new Promise ( (resolve, reject) => {
+    console.log(dataResults.length, frontResults.length);
+    if (dataResults.length !== frontResults.length) reject('Data Front and MYSQL is different');
+    let result = {
+      total: dataResults.length,
+      correct: 0,
+      wrong: 0
+    }
+    for (let index in frontResults) {
+      //console.log(frontResults[index], dataResults[index].correct)
+      if (frontResults[index] === dataResults[index].correct) result.correct++;
+      else result.wrong++;
+    }
+    console.log(result);
+    resolve(result)
+  })
+}
+
+export function setResults(userInfo, results) {
+  return new Promise ( (resolve, reject) => {
+    //console.log(userInfo);
+    let queryString = `INSERT INTO results VALUES(NULL, '${userInfo.group}', '${userInfo.name}', '${results.correct}', '${results.total}')`
+    console.log(queryString);
+    sql.query(queryString, (error, response) => {
+      if(error) console.log(error);
+      resolve(response);
+    })
+  })
+}
+
   // if (!variables.login && !variables.password) res = false;
   // else {
   //   let queryString = `SELECT login, password FROM users`;

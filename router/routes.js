@@ -2,14 +2,21 @@ const express = require('express');
 const router = express.Router();
 const data = require('../data/index');
 
-router.post('/database/authAdmin', async (request, response, next) => {
-  response.send( await data.auth(request.body) );
+router.post('/database/auth', async (request, response) => {
+  response.send( await data.getAuth(request.body) );
 });
 
-router.get('/database/tests', async (request, response, next) => {
-  response.send( await data.getTests(request.body) );
+router.get('/database/tests', async (request, response) => {
+  response.send( await data.getTests() );
 });
 
+router.post('/database/results', async (request, response) => {
+  let correctData = (await data.getDbResults(request.body.results));
+  //console.log(correctData, request.body.results);
+  let correctFront = (await data.calcResults(correctData, request.body.results));
+  (await data.setResults(request.body.userInfo, correctFront));
+  response.send( correctFront );
+});
 
 //
 //
