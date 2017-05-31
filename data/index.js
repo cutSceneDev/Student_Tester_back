@@ -37,11 +37,13 @@ export function getDbResults(frontData) {
   })
 }
 
-export function calcResults(dataResults, frontResults) {
+export function calcResults(dataResults, frontResults, frontUserInfo) {
   return new Promise ( (resolve, reject) => {
     console.log(dataResults.length, frontResults.length);
     if (dataResults.length !== frontResults.length) reject('Data Front and MYSQL is different');
     let result = {
+      name: frontUserInfo.name,
+      group: frontUserInfo.group,
       total: dataResults.length,
       correct: 0,
       wrong: 0
@@ -59,7 +61,7 @@ export function calcResults(dataResults, frontResults) {
 export function setResults(userInfo, results) {
   return new Promise ( (resolve, reject) => {
     //console.log(userInfo);
-    let queryString = `INSERT INTO results VALUES(NULL, '${userInfo.group}', '${userInfo.name}', '${results.correct}', '${results.total}')`
+    let queryString = `INSERT INTO results VALUES(NULL, '${userInfo.group}', '${userInfo.name}', ${results.correct}, ${results.total})`
     console.log(queryString);
     sql.query(queryString, (error, response) => {
       if(error) console.log(error);
