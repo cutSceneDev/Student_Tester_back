@@ -52,21 +52,35 @@ export function calcResults(dataResults, frontResults, frontUserInfo) {
       group: frontUserInfo.group,
       total: frontResults.length,
       correct: 0,
-      wrong: 0
+      wrong: 0,
+      mark: 0
     }
     for (let index in frontResults) {
-      //console.log(frontResults[index].answer, dataResults[index].correct)
       if (frontResults[index].answer == dataResults[index].correct)
         result.correct++;
       else result.wrong++;
     }
+    console.log(result);
+    result.mark = calcMark( result );
     resolve( result );
   })
 }
 
 export function setResults(userInfo, results) {
   return new Promise ( (resolve, reject) => {
-    let queryString = `INSERT INTO results VALUES(NULL, '${userInfo.group}', '${userInfo.name}', ${results.correct}, ${results.total})`
+    let date = new Date();
+    let time = `${date.getHours()}:${date.getMinutes()} ${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`;
+    let queryString = `INSERT INTO results VALUES(NULL, '${userInfo.group}', '${userInfo.name}', '${results.correct}', '${results.total}', '${time}')`
+    sql.query(queryString, (error, response) => {
+      if(error) console.log(error);
+      resolve(response);
+    })
+  })
+}
+
+export function getStat() {
+  return new Promise ( (resolve, reject) => {
+    let queryString = `SELECT * FROM results`;
     sql.query(queryString, (error, response) => {
       if(error) console.log(error);
       resolve(response);
@@ -92,6 +106,30 @@ function filterTests(testsPre, quality) {
     }
     return false;
   }
-  console.log(testsSorted.length);
   return testsSorted;
+}
+
+function calcMark(results) {
+  let mark = '0';
+  let coef = results.correct / results.total;
+  let markCriterion = {
+    '11': '0.95',
+    '10': '0.9',
+    '9': '0.85',
+    '8': '0.8',
+    '7': '0.75',
+    '6': '0.65',
+    '5': '0.5',
+    '4': '0.35',
+    '3': '0.2',
+    '2': '0'  }
+  if (coef >= 0.95) return 11;
+  for (let el in markCriterion) {
+    if (coef >= markCriterion[el]) {
+      //console.log(coef, markCriterion[el]);
+      if (mark < el) mark = el;
+    }
+  }
+  console.log(mark);
+  return mark;
 }
