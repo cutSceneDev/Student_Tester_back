@@ -17,52 +17,56 @@ export function getAuth(frontData) {
     });
   });
 }
-export function getTests(frontData) {
+
+export function getTests(frontSet) {
   return new Promise( (resolve, reject) => {
     let queryString = `SELECT id_question, question, answer1, answer2, answer3, answer4 FROM testing`;
     sql.query(queryString, (error, response) => {
       if(error) console.log(error);
-      resolve(response);
+      resolve( filterTests(response, frontSet.qua) );
     });
   });
 }
 
 export function getDbResults(frontData) {
   return new Promise ( (resolve, reject) => {
-    let queryString = `SELECT correct FROM testing`;
+    let queryString = `SELECT id_question, correct FROM testing`;
     sql.query(queryString, (error, response) => {
       if(error) console.log(error);
-      resolve(response);
+      let res = [];
+      for (let elem in frontData) {
+        for (let item in response) {
+          if (frontData[elem].id === response[item].id_question) res.push({id_question: response[item].id_question, correct: response[item].correct});
+        }
+      }
+      resolve( res );
     })
   })
 }
 
 export function calcResults(dataResults, frontResults, frontUserInfo) {
   return new Promise ( (resolve, reject) => {
-    console.log(dataResults.length, frontResults.length);
     if (dataResults.length !== frontResults.length) reject('Data Front and MYSQL is different');
     let result = {
       name: frontUserInfo.name,
       group: frontUserInfo.group,
-      total: dataResults.length,
+      total: frontResults.length,
       correct: 0,
       wrong: 0
     }
     for (let index in frontResults) {
-      //console.log(frontResults[index], dataResults[index].correct)
-      if (frontResults[index] === dataResults[index].correct) result.correct++;
+      //console.log(frontResults[index].answer, dataResults[index].correct)
+      if (frontResults[index].answer == dataResults[index].correct)
+        result.correct++;
       else result.wrong++;
     }
-    console.log(result);
-    resolve(result)
+    resolve( result );
   })
 }
 
 export function setResults(userInfo, results) {
   return new Promise ( (resolve, reject) => {
-    //console.log(userInfo);
     let queryString = `INSERT INTO results VALUES(NULL, '${userInfo.group}', '${userInfo.name}', ${results.correct}, ${results.total})`
-    console.log(queryString);
     sql.query(queryString, (error, response) => {
       if(error) console.log(error);
       resolve(response);
@@ -70,48 +74,24 @@ export function setResults(userInfo, results) {
   })
 }
 
-  // if (!variables.login && !variables.password) res = false;
-  // else {
-  //   let queryString = `SELECT login, password FROM users`;
-  //   sql.query(queryString, (error, response) => {
-  //     response.forEach((user) => {
-  //       if(user.login === variables.login && user.password === variables.password) res = true;
-  //       else res = false;
-  //
-  //   })
-  // }
-
-// exports.show = function show(resSend, params, query) {
-//   let queryString = `SELECT ${query.id || '*'} FROM ${params.target}`;
-//   console.log(queryString);
-//   sql.query(queryString, (error, response) => {
-//     if (error) resSend(error.toString());
-//     resSend(response);
-//   });
-// };
-//
-// exports.add = function add(resSend, params, query) {
-//   let queryString = `INSERT INTO ${params.target}(question, answer1, answer2, answer3, answer4, correct) VALUES ${query.body.id}`
-//   console.log(queryString);
-//   sql.query(queryString, (error, response) => {
-//     if (error) resSend(error.toString());
-//     resSend(response);
-//   });
-// };
-//
-// exports.login = function login(resSend, login, password) {
-//   let queryString = `SELECT login, password FROM users`;
-//   console.log(queryString);
-//
-//   sql.query(queryString, (error, response) => {
-//     if (error) resSend(error.toString());
-//     let res = false;
-//     response.forEach((user) => {
-//       if (user.login === login && user.password == password){
-//         res = true;
-//       }
-//     })
-//     resSend(res);
-//   });
-// }
-//
+function filterTests(testsPre, quality) {
+  let testsSorted = [];
+  let uniqueTests = [];
+  for (let i = 0; i < quality; i++ ) {
+    let randTest = Math.round( Math.random() * (testsPre.length - 1));
+    if ( check(randTest) ) {
+      i--;
+    } else {
+      uniqueTests.push(randTest);
+      testsSorted.push(testsPre[randTest]);
+    }
+  }
+  function check(current) {
+    for (let el in uniqueTests) {
+      if (uniqueTests[el] == current) return true;
+    }
+    return false;
+  }
+  console.log(testsSorted.length);
+  return testsSorted;
+}
