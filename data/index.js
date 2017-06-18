@@ -6,19 +6,23 @@ let sql = mysql.createConnection({
   database  : 'mydata'
 });
 
-export function getAuth(frontData) {
+export { getAuth, getTests, getDbResults, calcResults, setResults, getStat };
+
+function getAuth(frontData) {
   return new Promise( (resolve, reject) => {
     let queryString = `SELECT login, password FROM users`;
     sql.query(queryString, (error, response) => {
       response.forEach(user => {
-        if(user.login.toLowerCase() === frontData.login.toLowerCase() && user.password.toLowerCase() === frontData.password.toLowerCase()) resolve(true);
+        if(user.login.toLowerCase() == frontData.login.toLowerCase() && user.password.toLowerCase() == frontData.password.toLowerCase()) {
+          resolve(true);
+        }
       });
       resolve(false);
     });
   });
 }
 
-export function getTests(frontSet) {
+function getTests(frontSet) {
   return new Promise( (resolve, reject) => {
     let queryString = `SELECT id_question, question, answer1, answer2, answer3, answer4 FROM testing`;
     sql.query(queryString, (error, response) => {
@@ -28,7 +32,7 @@ export function getTests(frontSet) {
   });
 }
 
-export function getDbResults(frontData) {
+function getDbResults(frontData) {
   return new Promise ( (resolve, reject) => {
     let queryString = `SELECT id_question, correct FROM testing`;
     sql.query(queryString, (error, response) => {
@@ -44,7 +48,7 @@ export function getDbResults(frontData) {
   })
 }
 
-export function calcResults(dataResults, frontResults, frontUserInfo) {
+function calcResults(dataResults, frontResults, frontUserInfo) {
   return new Promise ( (resolve, reject) => {
     if (dataResults.length !== frontResults.length) reject('Data Front and MYSQL is different');
     let result = {
@@ -60,13 +64,12 @@ export function calcResults(dataResults, frontResults, frontUserInfo) {
         result.correct++;
       else result.wrong++;
     }
-    console.log(result);
-    result.mark = calcMark( result );
+    result.mark = markCalculator(result);
     resolve( result );
   })
 }
 
-export function setResults(userInfo, results) {
+function setResults(userInfo, results) {
   return new Promise ( (resolve, reject) => {
     let date = new Date();
     let time = `${date.getHours()}:${date.getMinutes()} ${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`;
@@ -78,7 +81,7 @@ export function setResults(userInfo, results) {
   })
 }
 
-export function getStat() {
+function getStat() {
   return new Promise ( (resolve, reject) => {
     let queryString = `SELECT * FROM results`;
     sql.query(queryString, (error, response) => {
@@ -91,6 +94,7 @@ export function getStat() {
 function filterTests(testsPre, quality) {
   let testsSorted = [];
   let uniqueTests = [];
+  
   for (let i = 0; i < quality; i++ ) {
     let randTest = Math.round( Math.random() * (testsPre.length - 1));
     if ( check(randTest) ) {
@@ -100,36 +104,39 @@ function filterTests(testsPre, quality) {
       testsSorted.push(testsPre[randTest]);
     }
   }
+
   function check(current) {
     for (let el in uniqueTests) {
       if (uniqueTests[el] == current) return true;
     }
     return false;
   }
+
   return testsSorted;
 }
 
-function calcMark(results) {
-  let mark = '0';
-  let coef = results.correct / results.total;
-  let markCriterion = {
-    '11': '0.95',
-    '10': '0.9',
-    '9': '0.85',
-    '8': '0.8',
-    '7': '0.75',
-    '6': '0.65',
-    '5': '0.5',
-    '4': '0.35',
-    '3': '0.2',
-    '2': '0'  }
-  if (coef >= 0.95) return 11;
-  for (let el in markCriterion) {
-    if (coef >= markCriterion[el]) {
-      //console.log(coef, markCriterion[el]);
-      if (mark < el) mark = el;
+function markCalculator(statistic, criterion) {
+  if (!statistic.correct || !statistic.total) {
+    return new Error('Incorrect arguments');
+  };
+  let coefficient = statistic.correct / statistic.total;
+  if (!criterion) {
+    criterion = {       //default criterion
+      '0.95': '11',
+      '0.9': '10',
+      '0.85': '9',
+      '0.8': '8',
+      '0.75': '7',
+      '0.65': '6',
+      '0.5': '5',
+      '0.35': '4',
+      '0.2': '3'
     }
   }
-  console.log(mark);
-  return mark;
+  for (let coef in criterion) {
+    if (coefficient > coef) {
+      return criterion[coef];
+    }
+  }
+  return '2';
 }
