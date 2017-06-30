@@ -94,7 +94,7 @@ function getStat() {
 function filterTests(testsPre, quality) {
   let testsSorted = [];
   let uniqueTests = [];
-  
+
   for (let i = 0; i < quality; i++ ) {
     let randTest = Math.round( Math.random() * (testsPre.length - 1));
     if ( check(randTest) ) {
@@ -120,8 +120,8 @@ function markCalculator(statistic, criterion) {
     return new Error('Incorrect arguments');
   };
   let coefficient = statistic.correct / statistic.total;
-  if (!criterion) {
-    criterion = {       //default criterion
+  if (!criterion) {       //если не пришел критерий
+    criterion = {
       '0.95': '11',
       '0.9': '10',
       '0.85': '9',
