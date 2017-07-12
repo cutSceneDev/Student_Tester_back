@@ -6,6 +6,8 @@ let sql = mysql.createConnection({
   database  : 'mydata'
 });
 
+import moment from 'moment';
+
 export { getAuth, getTests, getDbResults, calcResults, setResults, getStat };
 
 function getAuth(frontData) {
@@ -71,8 +73,7 @@ function calcResults(dataResults, frontResults, frontUserInfo) {
 
 function setResults(userInfo, results) {
   return new Promise ( (resolve, reject) => {
-    let date = new Date();
-    let time = `${date.getHours()}:${date.getMinutes()} ${date.getDate()}.${date.getMonth()}.${date.getFullYear()}`;
+    let time = moment().format('HH:mm DD-MM-YYYY');
     let queryString = `INSERT INTO results VALUES(NULL, '${userInfo.group}', '${userInfo.name}', '${results.correct}', '${results.total}', '${time}')`
     sql.query(queryString, (error, response) => {
       if(error) console.log(error);
