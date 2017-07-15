@@ -7,7 +7,7 @@ back server with Node.js + MySQL
        => cd student_tester_back
 3. install packages:
        => npm install
-4. import database from MYSQL_DB folder(execut from folder with mysql.exe):
+4. import database from MYSQL_DB folder(execut with prompt from folder with mysql.exe):
        => mysql -u root -p myData < ...\student_tester_back\mysql_db\mydata.sql
 5. start server:
        => npm start
