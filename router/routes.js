@@ -11,9 +11,12 @@ router.get('/database/tests', async (request, response) => {
 });
 
 router.post('/database/results', async (request, response) => {
-  let correctData = (await getDbResults(request.body.results));
-  let correctFront = (await calcResults(correctData, request.body.results, request.body.userInfo));
-  setResults(request.body.userInfo, correctFront);
+  //console.log(request.body);
+  let correctData = (await getDbResults(request.body.questData.tests));
+  //console.log(correctData, request.body.questData.results, request.body.userData);
+  let correctFront = (await calcResults(correctData, request.body.questData.results, request.body.userData));
+  //console.log('my-------------------',request.body.userData, 'my-------------------',correctFront)
+  setResults(correctFront);
   response.send(correctFront);
 });
 

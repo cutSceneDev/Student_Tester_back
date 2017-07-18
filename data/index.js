@@ -42,7 +42,9 @@ function getDbResults(frontData) {
       let res = [];
       for (let elem in frontData) {
         for (let item in response) {
-          if (frontData[elem].id === response[item].id_question) res.push({id_question: response[item].id_question, correct: response[item].correct});
+          if (frontData[elem].id_question === response[item].id_question) {
+            res.push({id_question: response[item].id_question, correct: response[item].correct});
+          }
         }
       }
       resolve( res );
@@ -62,7 +64,7 @@ function calcResults(dataResults, frontResults, frontUserInfo) {
       mark: 0
     }
     for (let index in frontResults) {
-      if (frontResults[index].answer == dataResults[index].correct)
+      if (frontResults[index] == dataResults[index].correct)
         result.correct++;
       else result.wrong++;
     }
@@ -71,10 +73,10 @@ function calcResults(dataResults, frontResults, frontUserInfo) {
   })
 }
 
-function setResults(userInfo, results) {
+function setResults(results) {
   return new Promise ( (resolve, reject) => {
     let time = moment().format('HH:mm DD-MM-YYYY');
-    let queryString = `INSERT INTO results VALUES(NULL, '${userInfo.group}', '${userInfo.name}', '${results.correct}', '${results.total}', '${time}')`
+    let queryString = `INSERT INTO results VALUES(NULL, '${results.group}', '${results.name}', '${results.correct}', '${results.total}', '${time}')`
     sql.query(queryString, (error, response) => {
       if(error) console.log(error);
       resolve(response);
