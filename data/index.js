@@ -2,13 +2,13 @@ const mysql = require('mysql');
 let sql = mysql.createConnection({
   host      : 'localhost',
   user      : 'root',   // your name
-  password  : '',       // your pass
+  password  : 'pass',       // your pass
   database  : 'mydata'
 });
 
 import moment from 'moment';
 
-export { getAuth, getTests, getDbResults, calcResults, setResults, getStat };
+export { getAuth, getTests, getCorrectDb, compareResults, sendComparedDb, getStat };
 
 function getAuth(frontData) {
   return new Promise( (resolve, reject) => {
@@ -34,46 +34,44 @@ function getTests(frontSet) {
   });
 }
 
-function getDbResults(frontData) {
+function getCorrectDb() {
   return new Promise ( (resolve, reject) => {
     let queryString = `SELECT id_question, correct FROM testing`;
     sql.query(queryString, (error, response) => {
-      if(error) console.log(error);
-      let res = [];
-      for (let elem in frontData) {
-        for (let item in response) {
-          if (frontData[elem].id_question === response[item].id_question) {
-            res.push({id_question: response[item].id_question, correct: response[item].correct});
-          }
-        }
-      }
-      resolve( res );
+      resolve(response);
     })
   })
 }
 
-function calcResults(dataResults, frontResults, frontUserInfo) {
+function compareResults(resultFront, userFront, correctResult) {
   return new Promise ( (resolve, reject) => {
-    if (dataResults.length !== frontResults.length) reject('Data Front and MYSQL is different');
-    let result = {
-      name: frontUserInfo.name,
-      group: frontUserInfo.group,
-      total: frontResults.length,
-      correct: 0,
-      wrong: 0,
-      mark: 0
+    console.log(resultFront, correctResult);
+    let correctCount = 0;
+    const sortedCorrect = correctResult.sort((prev, next) => {
+      return (prev.id_question > next.id_question) ? 1 : -1;
+    })
+    for (let result of resultFront) {
+      for (let correct of correctResult) {
+        if (result.id == correct.id_question) {
+          if (result.result == correct.correct) {
+            correctCount++;
+          }
+          break;
+        }
+      }
     }
-    for (let index in frontResults) {
-      if (frontResults[index] == dataResults[index].correct)
-        result.correct++;
-      else result.wrong++;
-    }
-    result.mark = markCalculator(result);
-    resolve( result );
+    resolve({
+      name: userFront.name,
+      group: userFront.group,
+      total: resultFront.length,
+      correct: correctCount,
+      wrong: resultFront.length - correctCount,
+      mark: markCalculator(correctCount / resultFront.length)
+    });
   })
 }
 
-function setResults(results) {
+function sendComparedDb(results) {
   return new Promise ( (resolve, reject) => {
     let time = moment().format('HH:mm DD-MM-YYYY');
     let queryString = `INSERT INTO results VALUES(NULL, '${results.group}', '${results.name}', '${results.correct}', '${results.total}', '${time}')`
@@ -97,7 +95,6 @@ function getStat() {
 function filterTests(testsPre, quality) {
   let testsSorted = [];
   let uniqueTests = [];
-
   for (let i = 0; i < quality; i++ ) {
     let randTest = Math.round( Math.random() * (testsPre.length - 1));
     if ( check(randTest) ) {
@@ -107,22 +104,16 @@ function filterTests(testsPre, quality) {
       testsSorted.push(testsPre[randTest]);
     }
   }
-
   function check(current) {
     for (let el in uniqueTests) {
       if (uniqueTests[el] == current) return true;
     }
     return false;
   }
-
   return testsSorted;
 }
 
-function markCalculator(statistic, criterion) {
-  if (!statistic.correct || !statistic.total) {
-    return new Error('Incorrect arguments');
-  };
-  let coefficient = statistic.correct / statistic.total;
+function markCalculator(coefficient, criterion) {
   if (!criterion) {       //если не пришел критерий
     criterion = {
       '0.95': '11',

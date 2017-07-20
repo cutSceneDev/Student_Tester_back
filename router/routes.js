@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { getAuth, getTests, getDbResults, calcResults, setResults, getStat } = require('../data/index');
+const { getAuth, getTests, getCorrectDb, compareResults, sendComparedDb, getStat } = require('../data/index');
 
 router.post('/database/auth', async (request, response) => {
   response.send( await getAuth(request.body) );
@@ -11,13 +11,11 @@ router.get('/database/tests', async (request, response) => {
 });
 
 router.post('/database/results', async (request, response) => {
-  //console.log(request.body);
-  let correctData = (await getDbResults(request.body.questData.tests));
-  //console.log(correctData, request.body.questData.results, request.body.userData);
-  let correctFront = (await calcResults(correctData, request.body.questData.results, request.body.userData));
-  //console.log('my-------------------',request.body.userData, 'my-------------------',correctFront)
-  setResults(correctFront);
-  response.send(correctFront);
+  const userFront = request.body.userData; //{name, group}
+  const resultFront = request.body.resultData; //[{result, id}, {...}]
+  const compared = await compareResults(resultFront, userFront, await getCorrectDb());
+  sendComparedDb(compared);
+  response.send(compared);
 });
 
 router.get('/database/stat', async (request, response) => {
