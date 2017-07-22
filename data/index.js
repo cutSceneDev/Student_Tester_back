@@ -45,7 +45,6 @@ function getCorrectDb() {
 
 function compareResults(resultFront, userFront, correctResult) {
   return new Promise ( (resolve, reject) => {
-    console.log(resultFront, correctResult);
     let correctCount = 0;
     const sortedCorrect = correctResult.sort((prev, next) => {
       return (prev.id_question > next.id_question) ? 1 : -1;
