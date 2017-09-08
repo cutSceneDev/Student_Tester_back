@@ -1,5 +1,5 @@
 # Student_Tester_back
-back server with Node.js + MySQL
+back server with Node.js + MySQL (require installed MySQL Server)
 
 1. clone rep to your computer:
        => git clone https://github.com/cutSceneDev/Student_Tester_back.git
